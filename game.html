@@ -60,7 +60,7 @@ function render(){let night=(t%2100)>1450;ctx.fillStyle=night?'#10182f':'#77c9ef
  stats.textContent=(hp>0?'DAY '+day+' • HP '+Math.ceil(hp)+'/'+maxhp+' • SCORE '+score+(night?' • NIGHT':' • DAY'):'GAME OVER • PRESS R TO RESTART');
  bar.innerHTML='';for(let i=1;i<=11;i++){let z=document.createElement('button');z.className='slot'+(i===sel?' active':'');z.type='button';z.innerHTML=i+' '+B[i][0]+'<small>'+(inv[i]||0)+'</small>';z.onclick=()=>{sel=i;render()};bar.appendChild(z)}}
 function hold(id,k){let b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))}
-hold('left','ArrowLeft');hold('right','ArrowRight');document.getElementById('jump').onclick=jump;document.getElementById('action').onclick=mine;document.getElementById('build').onclick=build;document.getElementById('new').onclick=terrain);
+hold('left','ArrowLeft');hold('right','ArrowRight');document.getElementById('jump').onclick=jump;document.getElementById('action').onclick=mine;document.getElementById('build').onclick=build;document.getElementById('new').onclick=terrain;
 document.getElementById('new').onclick=terrain;document.getElementById('action').onclick=mine;
 window.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key==='e'||e.key==='E')mine();if(e.key==='f'||e.key==='F')build();if(e.key==='c'||e.key==='C')craft();if(e.key==='r'||e.key==='R')terrain();if(e.key>='1'&&e.key<='9'){sel=+e.key;render()}});
 window.addEventListener('keyup',e=>keys[e.key]=false);terrain();requestAnimationFrame(update)})();
