@@ -43,10 +43,12 @@ canvas{display:block;width:100%;height:auto;image-rendering:auto}
 </div>
 <script>
 (()=>{const c=document.getElementById('screen'),x=c.getContext('2d'),menu=document.getElementById('menu'),status=document.getElementById('status'),timerEl=document.getElementById('timer'),msg=document.getElementById('msg');
-const W=1100,H=650,G=0.55;let mode='two',mapTheme='meadow',running=false,last=0,timeLeft=30,tagged=0,shake=0,particles=[],keys={},mobile={};let ducks=[];
+const W=1100,H=650,G=0.55;let mode='two',mapTheme='meadow',running=false,last=0,timeLeft=30,tagged=0,shake=0,particles=[],keys={},mobile={};let ducks=[];let obstacles=[];
 const arena={left:55,right:1045,top:80,bottom:585};
+function buildObstacles(){obstacles=[];if(mapTheme==='halloween')obstacles=[{x:300,y:430,w:105,h:42,t:'grave'},{x:620,y:360,w:125,h:42,t:'grave'},{x:820,y:475,w:95,h:35,t:'pumpkin'}];else if(mapTheme==='snow')obstacles=[{x:270,y:420,w:125,h:45,t:'ice'},{x:535,y:335,w:110,h:42,t:'ice'},{x:790,y:445,w:145,h:45,t:'ice'}];else if(mapTheme==='night')obstacles=[{x:290,y:430,w:120,h:45,t:'rock'},{x:590,y:370,w:105,h:45,t:'rock'},{x:825,y:465,w:125,h:38,t:'rock'}];else obstacles=[{x:300,y:430,w:115,h:42,t:'hay'},{x:575,y:360,w:120,h:48,t:'hay'},{x:830,y:460,w:115,h:42,t:'hay'}]}
+function blocked(d){for(const o of obstacles){if(d.x>o.x-28&&d.x<o.x+o.w+28&&d.y+38>o.y&&d.y-38<o.y+o.h){if(d.vy>=0&&d.y<o.y+18){d.y=o.y-38;d.vy=0}else if(d.x<o.x+o.w/2)d.x=o.x-29;else d.x=o.x+o.w+29;d.vx*=.35;return true}}return false}
 function say(s){msg.textContent=s}
-function reset(){timeLeft=30;tagged=0;shake=0;particles=[];ducks=[];
+function reset(){timeLeft=30;tagged=0;shake=0;particles=[];ducks=[];buildObstacles();
  const add=(name,x,y,body,ctrl,bot=false)=>ducks.push({name,x,y,vx:0,vy:0,dir:1,body,ctrl,bot,tag:false,cool:0,ai:Math.random()*10});
  add('Duck 1',220,450,'#ffd83d',{l:'a',r:'d',j:'w'});
  if(mode==='two')add('Duck 2',850,450,'#78d7ff',{l:'ArrowLeft',r:'ArrowRight',j:'ArrowUp'});
@@ -63,22 +65,22 @@ function botAI(d){
  let target;
  if(d.tag){
   target=others.reduce((best,o)=>dist(d,o)<dist(d,best)?o:best,others[0]);
-  d.vx+=Math.sign(d.x-target.x)*.32;
+  d.vx+=Math.sign(d.x-target.x)*.46;
  }else if(bomb&&bomb!==d){
   let lead=Math.max(-90,Math.min(90,bomb.vx*12));
   let aim=bomb.x+lead;
-  d.vx+=Math.sign(aim-d.x)*.27;
+  d.vx+=Math.sign(aim-d.x)*.40;
   if(Math.abs(bomb.x-d.x)<62&&Math.abs(bomb.y-d.y)<70&&Math.random()<.28)tagAttempt(d);
  }else{
   d.ai-=.016;
   if(d.ai<=0){d.ai=1.2+Math.random()*2.5;d.dir=Math.random()<.5?-1:1}
-  d.vx+=d.dir*.12;
+  d.vx+=d.dir*.18;
  }
  if(Math.random()<.025&&d.y>=arena.bottom-50)jump(d);
  if(Math.abs(d.vx)>.15)d.dir=d.vx<0?-1:1;
 }
 function update(dt){timeLeft-=dt;if(timeLeft<=0){timeLeft=0;running=false;let it=ducks.find(d=>d.tag);say(it?it.name+' EXPLODED! 💥':'Time!');menu.style.display='flex';document.querySelector('.logo').textContent='🏆 ROUND OVER';document.getElementById('start').textContent='PLAY AGAIN';return}
- for(const d of ducks){if(d.cool>0)d.cool--;if(d.bot)botAI(d);else{if(keys[d.ctrl.l]||mobile.left)d.vx-=.45;if(keys[d.ctrl.r]||mobile.right)d.vx+=.45;if(keys[d.ctrl.j]||mobile.jump)jump(d)}d.vx*=.86;d.vx=Math.max(-6,Math.min(6,d.vx));d.x+=d.vx;d.vy+=G;d.y+=d.vy;if(d.y>arena.bottom-48){d.y=arena.bottom-48;d.vy=0}d.x=Math.max(arena.left+25,Math.min(arena.right-25,d.x));if(Math.abs(d.vx)>.1)d.dir=d.vx<0?-1:1}
+ for(const d of ducks){if(d.cool>0)d.cool--;if(d.bot)botAI(d);else{if(keys[d.ctrl.l]||mobile.left)d.vx-=.62;if(keys[d.ctrl.r]||mobile.right)d.vx+=.62;if(keys[d.ctrl.j]||mobile.jump)jump(d)}d.vx*=.86;d.vx=Math.max(-8,Math.min(8,d.vx));d.x+=d.vx;d.vy+=G;d.y+=d.vy;blocked(d);if(d.y>arena.bottom-48){d.y=arena.bottom-48;d.vy=0}d.x=Math.max(arena.left+25,Math.min(arena.right-25,d.x));if(Math.abs(d.vx)>.1)d.dir=d.vx<0?-1:1}
  if(mode==='two'&&Math.random()<.01){let a=ducks.find(d=>d.tag);if(a&&dist(a,ducks.find(d=>d!==a))<58)tagAttempt(a)}
  if(mode==='two'&&mobile.tag)tagAttempt(ducks[0]);
  for(let i=particles.length-1;i>=0;i--){particles[i].life--;if(particles[i].life<=0)particles.splice(i,1)}
@@ -122,7 +124,7 @@ function render(){x.clearRect(0,0,W,H);
  // center tag hint
  x.fillStyle='#17212b99';x.font='bold 14px system-ui';x.textAlign='center';x.fillText('TOUCH THE OTHER DUCK TO PASS THE BOMB',W/2,arena.top+28);x.textAlign='left'}
 function loop(now){if(!running)return;let dt=Math.min(.035,(now-last)/1000);last=now;update(dt);requestAnimationFrame(loop)}
-function choose(m){if(m==='halloween'||m==='snow'||m==='night'){mapTheme=m;return}mode=m;document.getElementById('two').classList.toggle('active',m==='two');document.getElementById('bots').classList.toggle('active',m==='bots')}
+function choose(m){if(m==='halloween'||m==='snow'||m==='night'){mapTheme=m;buildObstacles();return}mode=m;document.getElementById('two').classList.toggle('active',m==='two');document.getElementById('bots').classList.toggle('active',m==='bots')}
 document.getElementById('two').onclick=()=>choose('two');document.getElementById('bots').onclick=()=>choose('bots');document.getElementById('halloween').onclick=()=>choose('halloween');document.getElementById('snow').onclick=()=>choose('snow');document.getElementById('night').onclick=()=>choose('night');document.getElementById('start').onclick=reset;document.getElementById('restart').onclick=()=>{document.querySelector('.logo').textContent='🦆 DUCK TAG';document.getElementById('start').textContent='START GAME';menu.style.display='flex';running=false};
 window.onkeydown=e=>{keys[e.key]=true;if(e.key==='e'||e.key==='E')tagAttempt(ducks[0]);if(e.key==='r'||e.key==='R'&&!running)reset()};window.onkeyup=e=>keys[e.key]=false;
 function hold(id,k){let b=document.getElementById(id);b.onpointerdown=()=>mobile[k]=true;b.onpointerup=b.onpointercancel=()=>mobile[k]=false}
