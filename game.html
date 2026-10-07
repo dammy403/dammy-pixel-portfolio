@@ -56,7 +56,27 @@ function ground(y){return y<arena.bottom}
 function jump(d){if(d.y>=arena.bottom-48){d.vy=-11}}
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function tagAttempt(d){if(!running||d.cool>0)return;for(const o of ducks)if(o!==d&&dist(d,o)<58){d.tag=true;o.tag=false;tagged=ducks.indexOf(d);say(d.name+' has the BOMB!');d.cool=12;particles.push({x:o.x,y:o.y,life:35});return}}
-function botAI(d){let target=ducks.find(o=>o.tag)!==d?ducks.find(o=>o.tag):ducks[0];if(!target)return;let dx=target.x-d.x;d.vx+=Math.sign(dx)*.22;d.dir=dx<0?-1:1;if(Math.abs(dx)<65&&Math.random()<.18)tagAttempt(d);if(Math.random()<.018&&d.y>=arena.bottom-50)jump(d)}
+function botAI(d){
+ let others=ducks.filter(o=>o!==d);
+ let bomb=ducks.find(o=>o.tag);
+ if(!others.length)return;
+ let target;
+ if(d.tag){
+  target=others.reduce((best,o)=>dist(d,o)<dist(d,best)?o:best,others[0]);
+  d.vx+=Math.sign(d.x-target.x)*.32;
+ }else if(bomb&&bomb!==d){
+  let lead=Math.max(-90,Math.min(90,bomb.vx*12));
+  let aim=bomb.x+lead;
+  d.vx+=Math.sign(aim-d.x)*.27;
+  if(Math.abs(bomb.x-d.x)<62&&Math.abs(bomb.y-d.y)<70&&Math.random()<.28)tagAttempt(d);
+ }else{
+  d.ai-=.016;
+  if(d.ai<=0){d.ai=1.2+Math.random()*2.5;d.dir=Math.random()<.5?-1:1}
+  d.vx+=d.dir*.12;
+ }
+ if(Math.random()<.025&&d.y>=arena.bottom-50)jump(d);
+ if(Math.abs(d.vx)>.15)d.dir=d.vx<0?-1:1;
+}
 function update(dt){timeLeft-=dt;if(timeLeft<=0){timeLeft=0;running=false;let it=ducks.find(d=>d.tag);say(it?it.name+' EXPLODED! 💥':'Time!');menu.style.display='flex';document.querySelector('.logo').textContent='🏆 ROUND OVER';document.getElementById('start').textContent='PLAY AGAIN';return}
  for(const d of ducks){if(d.cool>0)d.cool--;if(d.bot)botAI(d);else{if(keys[d.ctrl.l]||mobile.left)d.vx-=.45;if(keys[d.ctrl.r]||mobile.right)d.vx+=.45;if(keys[d.ctrl.j]||mobile.jump)jump(d)}d.vx*=.86;d.vx=Math.max(-6,Math.min(6,d.vx));d.x+=d.vx;d.vy+=G;d.y+=d.vy;if(d.y>arena.bottom-48){d.y=arena.bottom-48;d.vy=0}d.x=Math.max(arena.left+25,Math.min(arena.right-25,d.x));if(Math.abs(d.vx)>.1)d.dir=d.vx<0?-1:1}
  if(mode==='two'&&Math.random()<.01){let a=ducks.find(d=>d.tag);if(a&&dist(a,ducks.find(d=>d!==a))<58)tagAttempt(a)}
