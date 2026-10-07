@@ -3,67 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PIXEL REALMS — DAMMY.EXE</title>
+<title>DUCK TAG — DAMMY.EXE</title>
 <style>
-:root{--bg:#070a10;--panel:#111827;--ink:#f7f4e8;--muted:#a8b0c2;--line:#293449;--accent:#6cf0c2;--pink:#ff79c6}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#1a2942,#070a10 55%);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.wrap{width:min(100%,1000px);margin:auto;padding:16px}.head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}.title{font-weight:900;letter-spacing:2px}.stats{color:var(--muted);font-size:12px}
-.game{border:3px solid var(--line);background:#101820;box-shadow:8px 8px 0 #000;overflow:hidden}.screen{display:block;width:100%;height:auto;image-rendering:pixelated;background:#79c8ef;touch-action:none}
-.bar{display:flex;flex-wrap:wrap;gap:7px;padding:8px;background:var(--panel);border-top:2px solid var(--line)}button{font:inherit;color:var(--ink);background:#0c1320;border:2px solid var(--line);min-height:44px;border-radius:6px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{border-color:var(--accent);color:var(--accent)}.slot{min-width:72px}.slot small{display:block;color:var(--muted)}
-.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.wide{grid-column:span 2}.help{color:var(--muted);font-size:12px;line-height:1.6;margin:10px 0}.msg{min-height:20px;color:var(--accent);font-size:12px;margin:8px 0}
-@media(max-width:600px){.controls{grid-template-columns:repeat(2,1fr)}.wide{grid-column:span 1}.wrap{padding:10px}.stats{font-size:10px}}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#9ee7ff,#eef8ff);font-family:Inter,system-ui,sans-serif;color:#17212b}
+.wrap{width:min(1100px,100%);margin:auto;padding:18px}.brand{font-weight:900;letter-spacing:3px;font-size:20px;margin-bottom:10px}
+.game{position:relative;border:4px solid #17212b;border-radius:20px;overflow:hidden;box-shadow:0 12px 0 #17212b;background:#8fdcff}
+canvas{display:block;width:100%;height:auto;image-rendering:auto}
+.menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#16243acc,#16243aee);z-index:5}
+.card{width:min(520px,90%);padding:30px;border:4px solid #fff;border-radius:24px;background:#fff;box-shadow:0 12px 0 #101820;text-align:center}
+.logo{font-size:48px;font-weight:1000;letter-spacing:2px;margin:0 0 5px}.sub{color:#637180;margin:0 0 22px}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.mode{padding:16px 22px;border:3px solid #17212b;border-radius:14px;background:#f7fbff;font-weight:900;cursor:pointer;min-width:180px}.mode:hover,.mode.active{background:#ffe66d}.start{margin-top:18px;width:100%;padding:17px;border:0;border-radius:14px;background:#ff9f43;color:#17212b;font-size:18px;font-weight:1000;cursor:pointer}
+.help{margin-top:12px;color:#637180;font-size:13px}.hud{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;background:#17212b;color:#fff;font-size:13px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.controls button{flex:1;min-width:110px;min-height:46px;border:3px solid #17212b;border-radius:12px;background:#fff;font-weight:900}.msg{min-height:24px;font-weight:800;margin:10px 2px}
+@media(max-width:600px){.logo{font-size:34px}.card{padding:20px}.mode{min-width:145px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="head"><div class="title">PIXEL REALMS // DAMMY.EXE</div><div id="stats" class="stats"></div></div>
-<div class="game"><canvas id="screen" class="screen" width="960" height="576" aria-label="Pixel Realms game world"></canvas><div id="bar" class="bar"></div></div>
-<div class="controls">
-<button id="left">◀ LEFT</button><button id="right">RIGHT ▶</button><button id="jump">⬆ JUMP</button><button id="action">⛏ MINE</button>
-<button id="build" class="wide">▣ BUILD BLOCK</button><button id="new" class="wide">↻ NEW WORLD</button>
+<div class="brand">DAMMY.EXE // DUCK TAG</div>
+<div class="game">
+<canvas id="screen" width="1100" height="650"></canvas>
+<div id="menu" class="menu">
+ <div class="card">
+  <div class="logo">🦆 DUCK TAG</div>
+  <p class="sub">Run. Dodge. TAG the other ducks.</p>
+  <div class="row">
+   <button class="mode active" id="two">👥 TWO DUCKS</button>
+   <button class="mode" id="bots">🤖 VS BOTS</button>
+  </div>
+  <button class="start" id="start">START GAME</button>
+  <div class="help">2 players: Duck 1 uses WASD · Duck 2 uses arrow keys<br>Bot mode: you are Duck 1 · bots chase the tagged duck</div>
+ </div>
 </div>
-<div id="msg" class="msg" aria-live="polite"></div>
-<div class="help">A/D or arrow keys: move · W/Space: jump · E: mine · F: build · 1–6: choose block. Collect crystals, build a shelter, avoid slimes, and explore. On mobile, use the buttons. Your world exists only while this page is open.</div>
+</div>
+<div class="hud"><span id="status">Choose a mode and start.</span><span id="timer">60</span></div>
+<div class="controls">
+<button id="left">◀</button><button id="right">▶</button><button id="jump">JUMP</button><button id="tag">TAG</button><button id="restart">RESTART</button>
+</div>
+<div id="msg" class="msg">First duck to survive the timer without being tagged wins!</div>
 </div>
 <script>
-(()=>{const c=document.getElementById('screen'),ctx=c.getContext('2d'),stats=document.getElementById('stats'),bar=document.getElementById('bar'),msg=document.getElementById('msg');
-const T=16,CW=90,CH=38,W=CW*T,H=CH*T;let map,fg,decor,slimes,particles,keys={},cam=0,sel=2,day=1,t=0,score=0,hp=100,maxhp=100,inv,player,paused=false;
-const B={1:['Grass','#4f9b48'],2:['Dirt','#76502f'],3:['Stone','#555d68'],4:['Copper','#b86e45'],5:['Iron','#a9b2bd'],6:['Crystal','#48d5e5'],7:['Wood','#85522d'],8:['Leaves','#3f8148'],9:['Brick','#a34e5f'],10:['Sand','#c9b26b'],11:['Snow','#d9eef1']};
+(()=>{const c=document.getElementById('screen'),x=c.getContext('2d'),menu=document.getElementById('menu'),status=document.getElementById('status'),timerEl=document.getElementById('timer'),msg=document.getElementById('msg');
+const W=1100,H=650,G=0.55;let mode='two',running=false,last=0,timeLeft=60,tagged=0,shake=0,particles=[],keys={},mobile={};let ducks=[];
+const arena={left:55,right:1045,top:80,bottom:585};
 function say(s){msg.textContent=s}
-function terrain(){map=Array.from({length:CH},()=>Array(CW).fill(0));fg=Array.from({length:CH},()=>Array(CW).fill(0));decor=Array.from({length:CH},()=>Array(CW).fill(0));
- let h=15;for(let x=0;x<CW;x++){h+=Math.floor(Math.random()*3)-1;h=Math.max(10,Math.min(19,h));let biome=x<28?0:x<60?1:2;for(let y=h;y<CH;y++){let b=y===h?(biome===2?10:1):(y<h+4?2:3);map[y][x]=b;if(y>h+4&&Math.random()<.055)map[y][x]=Math.random()<.45?4:5;if(y>h+7&&Math.random()<.018)map[y][x]=6}}
- for(let x=3;x<CW-3;x++){let ground=map.findIndex((r,y)=>y>5&&r[x]);if(ground>0&&Math.random()<.08&&x>4){for(let k=1;k<5&&ground-k>1;k++)map[ground-k][x]=7;for(let dx=-2;dx<=2;dx++)for(let dy=1;dy<=3;dy++)if(Math.random()<.72&&ground-4+dy>=0)map[ground-4+dy][x+dx]=8}}
- // caves
- for(let i=0;i<34;i++){let cx=5+Math.random()*(CW-10),cy=18+Math.random()*15,rx=2+Math.random()*4,ry=1+Math.random()*3;for(let y=Math.floor(cy-ry);y<=cy+ry;y++)for(let x=Math.floor(cx-rx);x<=cx+rx;x++)if(((x-cx)/(rx))**2+((y-cy)/(ry))**2<1)map[y]?.[x]&&(map[y][x]=0)}
- player={x:6,y:7,vx:0,vy:0,on:false,dir:1};slimes=[];particles=[];for(let i=0;i<12;i++){let x=12+Math.random()*72;slimes.push({x,y:6,vx:0,vy:0,on:false,hp:3,hit:0})}inv={1:8,2:25,3:12,4:0,5:0,6:0,7:12,8:0,9:0,10:0,11:0};cam=0;hp=maxhp;score=0;day=1;t=0;sel=2;say('A fresh world. Mine deep, craft, build, and survive the night.');render()}
-function solid(x,y){return x<0||x>=CW||y>=CH||(y>=0&&map[y][x]!==0)}
-function hit(o,nx,ny){let w=.72,h=.9,l=Math.floor(nx),r=Math.floor(nx+w),q=Math.floor(ny),bb=Math.floor(ny+h);return solid(l,q)||solid(r,q)||solid(l,bb)||solid(r,bb)}
-function move(o){o.vy+=.018;let nx=o.x+o.vx;if(!hit(o,nx,o.y))o.x=Math.max(0,Math.min(CW-1.1,nx));else o.vx=0;let ny=o.y+o.vy;if(!hit(o,o.x,ny)){o.y=ny;o.on=false}else{o.on=o.vy>0;o.vy=0}}
-function target(){return{x:Math.floor(player.x+player.dir*1.35),y:Math.floor(player.y+.5)}}
-function drop(x,y,n){for(let i=0;i<n;i++)particles.push({x:x*T,y:y*T,vx:(Math.random()-.5)*2,vy:-Math.random()*2,life:30,txt:'+'+B[n][0]})}
-function mine(){let q=target(),b=map[q.y]?.[q.x];if(!b){say('Swing! Nothing there.');return}if(b===8){b=8}map[q.y][q.x]=0;inv[b]=(inv[b]||0)+1;score+=b===6?100:10;drop(q.x,q.y,b);say('Mined '+B[b][0]+(b===6?' — RARE CRYSTAL!':''));render()}
-function build(){let q=target();if(map[q.y]?.[q.x]){say('Blocked.');return}if((inv[sel]||0)<1){say('Need '+B[sel][0]+'.');return}map[q.y][q.x]=sel;inv[sel]--;score+=3;say('Built '+B[sel][0]+'.');render()}
-function craft(){if((inv[7]||0)>=4&&(inv[3]||0)>=2){inv[7]-=4;inv[3]-=2;inv[9]=(inv[9]||0)+4;say('Crafted 4 Brick Blocks from wood + stone.')}else say('Crafting recipe: 4 Wood + 2 Stone = 4 Brick.')}
-function jump(){if(player.on){player.vy=-.32;player.on=false}}
-function hurt(n){hp=Math.max(0,hp-n);say('Ouch! Slime hit you.');for(let i=0;i<8;i++)particles.push({x:player.x*T,y:player.y*T,vx:(Math.random()-.5)*3,vy:-Math.random()*2,life:25,txt:'*'})}
-function update(){if(hp<=0){render();return}let L=keys.a||keys.ArrowLeft,R=keys.d||keys.ArrowRight;if(L){player.vx-=.04;player.dir=-1}if(R){player.vx+=.04;player.dir=1}player.vx*=.82;if(keys.w||keys.ArrowUp||keys[' '])jump();move(player);
- for(const e of slimes){if(e.hp<=0)continue;let dx=player.x-e.x;e.vx+=Math.sign(dx)*.004;e.vx=Math.max(-.06,Math.min(.06,e.vx));if(Math.random()<.008&&e.on)e.vy=-.25;move(e);if(Math.abs(dx)<.8&&Math.abs(player.y-e.y)<1&&e.hit<=0){hurt(8);e.hit=40}e.hit--}
- for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life--;if(p.life<=0)particles.splice(i,1)}
- t++;if(t%2100===0)day++;cam=Math.max(0,Math.min(CW-60,player.x-30));render();requestAnimationFrame(update)}
-function tile(b,x,y){let X=(x-cam)*T,Y=y*T;if(X<-T||X>W)return;ctx.fillStyle=B[b][1];ctx.fillRect(X,Y,T,T);ctx.fillStyle='rgba(255,255,255,.10)';ctx.fillRect(X,Y,T,2);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(X+T-2,Y,2,T);if(b===3){ctx.fillStyle='#68717b';ctx.fillRect(X+3,Y+4,3,3);ctx.fillRect(X+10,Y+9,2,2)}if(b===4||b===5){ctx.fillStyle=b===4?'#f08b58':'#e7faff';ctx.fillRect(X+4,Y+5,3,3);ctx.fillRect(X+10,Y+10,3,3)}if(b===6){ctx.fillStyle='#bfffff';ctx.fillRect(X+5,Y+5,6,6)}}
-function render(){let night=(t%2100)>1450;ctx.fillStyle=night?'#10182f':'#77c9ef';ctx.fillRect(0,0,W,H);ctx.fillStyle=night?'#f1e8a7':'#ffe18a';ctx.beginPath();ctx.arc(night?820:110,65,night?17:25,0,7);ctx.fill();
- for(let y=0;y<CH;y++)for(let x=0;x<CW;x++)if(map[y][x])tile(map[y][x],x,y);
- for(const e of slimes)if(e.hp>0){let X=(e.x-cam)*T,Y=e.y*T;ctx.fillStyle='#a85de0';ctx.fillRect(X+1,Y+5,14,11);ctx.fillStyle='#fff';ctx.fillRect(X+4,Y+8,3,3);ctx.fillRect(X+10,Y+8,3,3);ctx.fillStyle='#40204e';ctx.fillRect(X+5,Y+12,7,2)}
- let X=(player.x-cam)*T,Y=player.y*T;ctx.fillStyle='#1d2630';ctx.fillRect(X+3,Y+6,11,14);ctx.fillStyle='#f0b27a';ctx.fillRect(X+5,Y,9,9);ctx.fillStyle='#6cf0c2';ctx.fillRect(X+4,Y+12,10,8);ctx.fillStyle='#242b35';ctx.fillRect(X+(player.dir>0?12:1),Y+8,4,3);
- for(const p of particles){ctx.fillStyle='#fff';ctx.font='8px monospace';ctx.fillText(p.txt,p.x-cam*T,p.y)}
- let q=target();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.strokeRect((q.x-cam)*T,q.y*T,T,T);
- stats.textContent=(hp>0?'DAY '+day+' • HP '+Math.ceil(hp)+'/'+maxhp+' • SCORE '+score+(night?' • NIGHT':' • DAY'):'GAME OVER • PRESS R TO RESTART');
- bar.innerHTML='';for(let i=1;i<=11;i++){let z=document.createElement('button');z.className='slot'+(i===sel?' active':'');z.type='button';z.innerHTML=i+' '+B[i][0]+'<small>'+(inv[i]||0)+'</small>';z.onclick=()=>{sel=i;render()};bar.appendChild(z)}}
-function hold(id,k){let b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))}
-hold('left','ArrowLeft');hold('right','ArrowRight');document.getElementById('jump').onclick=jump;document.getElementById('action').onclick=mine;document.getElementById('build').onclick=build;document.getElementById('new').onclick=terrain;
-document.getElementById('new').onclick=terrain;document.getElementById('action').onclick=mine;
-window.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key==='e'||e.key==='E')mine();if(e.key==='f'||e.key==='F')build();if(e.key==='c'||e.key==='C')craft();if(e.key==='r'||e.key==='R')terrain();if(e.key>='1'&&e.key<='9'){sel=+e.key;render()}});
-window.addEventListener('keyup',e=>keys[e.key]=false);terrain();requestAnimationFrame(update)})();
-</script>
+function reset(){timeLeft=60;tagged=0;shake=0;particles=[];ducks=[];
+ const add=(name,x,y,body,ctrl,bot=false)=>ducks.push({name,x,y,vx:0,vy:0,dir:1,body,ctrl,bot,tag:false,cool:0,ai:Math.random()*10});
+ add('Duck 1',220,450,'#ffd83d',{l:'a',r:'d',j:'w'});
+ if(mode==='two')add('Duck 2',850,450,'#78d7ff',{l:'ArrowLeft',r:'ArrowRight',j:'ArrowUp'});
+ else{add('Bot Blue',760,420,'#78d7ff',{},true);add('Bot Pink',900,470,'#ff91c8',{},true)}
+ ducks[0].tag=true; status.textContent=mode==='two'?'Duck 1 is IT!':'Duck 1 is IT!';say('TAG the other duck before they get away!');running=true;menu.style.display='none';last=performance.now();requestAnimationFrame(loop)}
+function ground(y){return y<arena.bottom}
+function jump(d){if(d.y>=arena.bottom-48){d.vy=-11}}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function tagAttempt(d){if(!running||d.cool>0)return;for(const o of ducks)if(o!==d&&dist(d,o)<70){d.tag=true;o.tag=false;tagged=ducks.indexOf(d);say(d.name+' is IT!');d.cool=35;particles.push({x:o.x,y:o.y,life:35});return}}
+function botAI(d){let target=ducks.find(o=>o.tag)!==d?ducks.find(o=>o.tag):ducks[0];if(!target)return;let dx=target.x-d.x;d.vx+=Math.sign(dx)*.22;d.dir=dx<0?-1:1;if(Math.abs(dx)<85&&Math.random()<.08)tagAttempt(d);if(Math.random()<.018&&d.y>=arena.bottom-50)jump(d)}
+function update(dt){timeLeft-=dt;if(timeLeft<=0){timeLeft=0;running=false;let it=ducks.find(d=>d.tag);say(it?it.name+' is IT when time ran out!':'Time!');menu.style.display='flex';document.querySelector('.logo').textContent='🏆 ROUND OVER';document.getElementById('start').textContent='PLAY AGAIN';return}
+ for(const d of ducks){if(d.cool>0)d.cool--;if(d.bot)botAI(d);else{if(keys[d.ctrl.l]||mobile.left)d.vx-=.45;if(keys[d.ctrl.r]||mobile.right)d.vx+=.45;if(keys[d.ctrl.j]||mobile.jump)jump(d)}d.vx*=.86;d.vx=Math.max(-6,Math.min(6,d.vx));d.x+=d.vx;d.vy+=G;d.y+=d.vy;if(d.y>arena.bottom-48){d.y=arena.bottom-48;d.vy=0}d.x=Math.max(arena.left+25,Math.min(arena.right-25,d.x));if(Math.abs(d.vx)>.1)d.dir=d.vx<0?-1:1}
+ if(mode==='two'&&Math.random()<.01){let a=ducks.find(d=>d.tag);if(a&&dist(a,ducks.find(d=>d!==a))<58)tagAttempt(a)}
+ if(mode==='two'&&mobile.tag)tagAttempt(ducks[0]);
+ for(let i=particles.length-1;i>=0;i--){particles[i].life--;if(particles[i].life<=0)particles.splice(i,1)}
+ timerEl.textContent=Math.ceil(timeLeft);status.textContent=ducks.map(d=>(d.tag?'★ ':'')+d.name).join('  •  ');render()}
+function duck(d){x.save();x.translate(d.x,d.y);x.scale(d.dir,1);
+ // shadow
+ x.fillStyle='#0003';x.beginPath();x.ellipse(0,48,35,8,0,0,Math.PI*2);x.fill();
+ // tail
+ x.fillStyle=d.body;x.beginPath();x.ellipse(-28,2,15,12,-.6,0,Math.PI*2);x.fill();
+ // body
+ x.beginPath();x.ellipse(0,18,34,29,0,0,Math.PI*2);x.fill();
+ // wing
+ x.fillStyle='#00000012';x.beginPath();x.ellipse(-8,20,21,14,-.35,0,Math.PI*2);x.fill();
+ // neck/head
+ x.fillStyle=d.body;x.beginPath();x.ellipse(15,-17,27,27,0,0,Math.PI*2);x.fill();
+ // head highlight
+ x.fillStyle='#ffffff66';x.beginPath();x.ellipse(22,-25,11,8,-.4,0,Math.PI*2);x.fill();
+ // eye
+ x.fillStyle='#17212b';x.beginPath();x.arc(24,-22,4,0,Math.PI*2);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(25,-23,1.3,0,Math.PI*2);x.fill();
+ // beak
+ x.fillStyle='#f28c28';x.beginPath();x.moveTo(39,-15);x.lineTo(57,-9);x.lineTo(39,-3);x.closePath();x.fill();
+ // feet
+ x.strokeStyle='#f28c28';x.lineWidth=5;x.lineCap='round';x.beginPath();x.moveTo(-10,43);x.lineTo(-15,52);x.moveTo(10,43);x.lineTo(15,52);x.stroke();
+ // tag bubble
+ if(d.tag){x.fillStyle='#ff5d5d';x.beginPath();x.arc(0,-58,14,0,Math.PI*2);x.fill();x.fillStyle='#fff';x.font='bold 18px system-ui';x.textAlign='center';x.fillText('!',0,-52)}
+ x.restore()}
+function render(){x.clearRect(0,0,W,H);
+ let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8cddff');g.addColorStop(1,'#d9f5ff');x.fillStyle=g;x.fillRect(0,0,W,H);
+ // sun/clouds
+ x.fillStyle='#ffe37b';x.beginPath();x.arc(930,105,42,0,Math.PI*2);x.fill();
+ x.fillStyle='#ffffff99';for(const p of [[150,120,60],[400,165,45],[700,115,70]]){x.beginPath();x.arc(p[0],p[1],p[2],0,Math.PI*2);x.fill()}
+ // distant hills
+ x.fillStyle='#8bcf9b';x.beginPath();x.moveTo(0,430);for(let i=0;i<=1100;i+=55)x.lineTo(i,390-Math.sin(i/100)*55);x.lineTo(1100,650);x.lineTo(0,650);x.fill();
+ // arena
+ x.fillStyle='#8fd06a';x.fillRect(arena.left,arena.top,arena.right-arena.left,arena.bottom-arena.top);
+ x.fillStyle='#6fbd55';for(let i=0;i<70;i++){let px=70+(i*83)%950,py=120+(i*47)%450;x.fillRect(px,py,4,2)}
+ x.fillStyle='#c9e78a';x.fillRect(arena.left,arena.bottom-15,arena.right-arena.left,15);
+ x.strokeStyle='#fff8';x.lineWidth=5;x.strokeRect(arena.left,arena.top,arena.right-arena.left,arena.bottom-arena.top);
+ for(const d of ducks)duck(d);
+ for(const p of particles){x.fillStyle='#fff';x.font='bold 24px system-ui';x.fillText('💥',p.x-12,p.y-50)}
+ // center tag hint
+ x.fillStyle='#17212b99';x.font='bold 14px system-ui';x.textAlign='center';x.fillText('GET CLOSE AND PRESS TAG',W/2,arena.top+28);x.textAlign='left'}
+function loop(now){if(!running)return;let dt=Math.min(.035,(now-last)/1000);last=now;update(dt);requestAnimationFrame(loop)}
+function choose(m){mode=m;document.getElementById('two').classList.toggle('active',m==='two');document.getElementById('bots').classList.toggle('active',m==='bots')}
+document.getElementById('two').onclick=()=>choose('two');document.getElementById('bots').onclick=()=>choose('bots');document.getElementById('start').onclick=reset;document.getElementById('restart').onclick=()=>{document.querySelector('.logo').textContent='🦆 DUCK TAG';document.getElementById('start').textContent='START GAME';menu.style.display='flex';running=false};
+window.onkeydown=e=>{keys[e.key]=true;if(e.key==='e'||e.key==='E')tagAttempt(ducks[0]);if(e.key==='r'||e.key==='R'&&!running)reset()};window.onkeyup=e=>keys[e.key]=false;
+function hold(id,k){let b=document.getElementById(id);b.onpointerdown=()=>mobile[k]=true;b.onpointerup=b.onpointercancel=()=>mobile[k]=false}
+hold('left','left');hold('right','right');hold('jump','jump');document.getElementById('tag').onclick=()=>tagAttempt(ducks[0]);
+document.getElementById('restart').onclick=()=>{running=false;menu.style.display='flex';document.querySelector('.logo').textContent='🦆 DUCK TAG';document.getElementById('start').textContent='START GAME';say('Pick TWO DUCKS or VS BOTS.');};
+render();
+})();</script>
 </body>
 </html>
